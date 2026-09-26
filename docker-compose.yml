@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # MySQL Database Container
+  mysqldb:
+    image: mysql:8.0
+    container_name: medicare-mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: medicaredb
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - medicare-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Backend REST API Container
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medicare-backend
+    restart: always
+    environment:
+      DB_URL: jdbc:mysql://mysqldb:3306/medicaredb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_USERNAME: root
+      DB_PASSWORD: rootpassword
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    networks:
+      - medicare-network
+
+  # React Frontend Container
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medicare-frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - medicare-network
+
+volumes:
+  mysql-data:
+
+networks:
+  medicare-network:
+    driver: bridge

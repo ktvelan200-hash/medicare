@@ -1,0 +1,32 @@
+package com.medicare.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+public class PrescriptionRequestDto {
+
+    @NotNull(message = "Appointment ID is required")
+    private Long appointmentId;
+
+    @NotBlank(message = "Diagnosis is required")
+    private String diagnosis;
+
+    @NotBlank(message = "Medicines list is required")
+    private String medicines;
+
+    private String instructions;
+
+    public PrescriptionRequestDto() {}
+
+    public Long getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
+
+    public String getDiagnosis() { return diagnosis; }
+    public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
+
+    public String getMedicines() { return medicines; }
+    public void setMedicines(String medicines) { this.medicines = medicines; }
+
+    public String getInstructions() { return instructions; }
+    public void setInstructions(String instructions) { this.instructions = instructions; }
+}
