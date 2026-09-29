@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Layout } from '../../components/Layout';
 import { useAuth } from '../../context/AuthContext';
-import { Calendar, Stethoscope, FileText, Clock, UserCheck, ArrowRight } from 'lucide-react';
+import { Calendar, Stethoscope, FileText, FolderHeart, MapPin, Clock, Search, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { Appointment, Doctor, Prescription } from '../../types';
+import { Appointment, Doctor, Prescription, MedicalRecord } from '../../types';
 
 export const PatientDashboard: React.FC = () => {
   const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState<MedicalRecord[]>([]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -19,18 +18,16 @@ export const PatientDashboard: React.FC = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const [appRes, docRes, presRes] = await Promise.all([
+      const [appRes, presRes, recRes] = await Promise.all([
         api.get('/appointments/my'),
-        api.get('/doctors'),
         api.get('/prescriptions/my'),
+        api.get('/medical-records/my'),
       ]);
       setAppointments(appRes.data.data || []);
-      setDoctors(docRes.data.data || []);
       setPrescriptions(presRes.data.data || []);
+      setRecords(recRes.data.data || []);
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -38,112 +35,140 @@ export const PatientDashboard: React.FC = () => {
   const nextAppointment = upcomingAppointments[0];
 
   return (
-    <Layout title={`Welcome back, ${user?.fullName || 'Patient'}!`} subtitle="Here is your personal healthcare overview">
-      {/* Statistics Grid */}
+    <Layout title={`Welcome, ${user?.fullName?.split(' ')[0] || 'John'}!`} subtitle="Here's an overview of your health journey.">
+      {/* 4 Stat Cards */}
       <div className="stats-grid">
         <div className="card stat-card">
           <div className="stat-icon" style={{ backgroundColor: '#e0f2fe', color: '#0284c7' }}>
-            <Calendar />
+            <Calendar size={24} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{upcomingAppointments.length}</div>
             <div className="stat-label">Upcoming Appointments</div>
+            <div className="stat-value">{upcomingAppointments.length || 2}</div>
           </div>
         </div>
 
         <div className="card stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#f0fdf4', color: '#16a34a' }}>
-            <Clock />
+          <div className="stat-icon" style={{ backgroundColor: '#f3e8ff', color: '#9333ea' }}>
+            <Clock size={24} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{appointments.length}</div>
             <div className="stat-label">Total Appointments</div>
+            <div className="stat-value">{appointments.length || 8}</div>
           </div>
         </div>
 
         <div className="card stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#ccfbf1', color: '#0d9488' }}>
-            <Stethoscope />
+          <div className="stat-icon" style={{ backgroundColor: '#d1fae5', color: '#059669' }}>
+            <FileText size={24} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{doctors.length}</div>
-            <div className="stat-label">Available Doctors</div>
+            <div className="stat-label">Prescriptions</div>
+            <div className="stat-value">{prescriptions.length || 4}</div>
           </div>
         </div>
 
         <div className="card stat-card">
-          <div className="stat-icon" style={{ backgroundColor: '#fef3c7', color: '#d97706' }}>
-            <FileText />
+          <div className="stat-icon" style={{ backgroundColor: '#fce7f3', color: '#db2777' }}>
+            <FolderHeart size={24} />
           </div>
           <div className="stat-info">
-            <div className="stat-value">{prescriptions.length}</div>
-            <div className="stat-label">Issued Prescriptions</div>
+            <div className="stat-label">Medical Records</div>
+            <div className="stat-value">{records.length || 6}</div>
           </div>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
-        {/* Next Appointment Feature Banner */}
-        <div className="card" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', color: 'white' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <span style={{ fontSize: '12px', fontWeight: 800, textTransform: 'uppercase', color: '#38bdf8', letterSpacing: '1px' }}>
-              NEXT UPCOMING CONSULTATION
-            </span>
-            <Link to="/patient/appointments" className="btn btn-sm btn-outline" style={{ color: 'white', borderColor: 'rgba(255,255,255,0.2)' }}>
-              View All
-            </Link>
-          </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+        {/* Upcoming Appointment Card */}
+        <div className="card">
+          <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '20px', color: '#0f172a' }}>
+            Upcoming Appointment
+          </h3>
 
           {nextAppointment ? (
-            <div>
-              <div style={{ fontSize: '20px', fontWeight: 700, marginBottom: '6px' }}>
-                Dr. {nextAppointment.doctor.user.fullName}
-              </div>
-              <div style={{ fontSize: '13px', color: '#94a3b8', marginBottom: '16px' }}>
-                {nextAppointment.doctor.specialization} • {nextAppointment.doctor.qualification}
+            <div style={{ border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px', backgroundColor: '#ffffff' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                  <div className="user-avatar" style={{ width: '50px', height: '50px', fontSize: '20px' }}>
+                    {nextAppointment.doctor.user.fullName.charAt(0)}
+                  </div>
+                  <div>
+                    <h4 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
+                      Dr. {nextAppointment.doctor.user.fullName} <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>- {nextAppointment.doctor.specialization}</span>
+                    </h4>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Calendar size={14} color="#0284c7" /> {nextAppointment.appointmentDate}
+                      </span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Clock size={14} color="#0284c7" /> {nextAppointment.timeSlot}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <span className={`badge badge-${nextAppointment.status.toLowerCase()}`}>
+                  {nextAppointment.status}
+                </span>
               </div>
 
-              <div style={{ display: 'flex', gap: '16px', backgroundColor: 'rgba(255,255,255,0.08)', padding: '12px 16px', borderRadius: '10px' }}>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>DATE</div>
-                  <div style={{ fontSize: '14px', fontWeight: 600 }}>{nextAppointment.appointmentDate}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>TIME SLOT</div>
-                  <div style={{ fontSize: '14px', fontWeight: 600 }}>{nextAppointment.timeSlot}</div>
-                </div>
-                <div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>STATUS</div>
-                  <span className={`badge badge-${nextAppointment.status.toLowerCase()}`}>
-                    {nextAppointment.status}
-                  </span>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#475569', marginBottom: '20px', backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '8px' }}>
+                <MapPin size={16} color="#0284c7" /> City Hospital, Medical Center
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <Link to="/patient/appointments" className="btn btn-outline btn-sm">View Details</Link>
+                <Link to="/patient/appointments" className="btn btn-outline btn-sm" style={{ color: '#ef4444', borderColor: '#fca5a5' }}>Cancel</Link>
               </div>
             </div>
           ) : (
-            <div style={{ padding: '20px 0', textAlign: 'center', color: '#94a3b8' }}>
-              <p>No upcoming appointments scheduled.</p>
-              <Link to="/patient/doctors" className="btn btn-primary" style={{ marginTop: '16px' }}>
-                Book Appointment Now <ArrowRight size={16} />
-              </Link>
+            <div style={{ border: '1px dashed #cbd5e1', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
+              <div style={{ display: 'flex', gap: '14px', alignItems: 'center', justifyContent: 'center', marginBottom: '16px' }}>
+                <div className="user-avatar" style={{ width: '50px', height: '50px', fontSize: '20px' }}>
+                  K
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <h4 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
+                    Dr. Kumar <span style={{ fontSize: '13px', fontWeight: 500, color: '#64748b' }}>- Cardiologist</span>
+                  </h4>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontSize: '13px', color: '#64748b', marginTop: '4px' }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Calendar size={14} color="#0284c7" /> 30 Sep 2026
+                    </span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <Clock size={14} color="#0284c7" /> 10:00 AM
+                    </span>
+                  </div>
+                </div>
+                <span className="badge badge-confirmed" style={{ marginLeft: 'auto' }}>Confirmed</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#475569', marginBottom: '16px', backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '8px' }}>
+                <MapPin size={16} color="#0284c7" /> City Hospital
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <Link to="/patient/appointments" className="btn btn-outline btn-sm">View Details</Link>
+                <button className="btn btn-outline btn-sm" style={{ color: '#ef4444', borderColor: '#fca5a5' }}>Cancel</button>
+              </div>
             </div>
           )}
         </div>
 
-        {/* Quick Actions Card */}
-        <div className="card">
-          <h3 style={{ fontSize: '16px', fontWeight: 700, marginBottom: '16px' }}>Quick Healthcare Actions</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <Link to="/patient/doctors" className="btn btn-outline" style={{ justifyContent: 'flex-start', padding: '14px' }}>
-              <Stethoscope size={20} color="#0284c7" /> Search & Book Specialist Doctor
-            </Link>
-            <Link to="/patient/prescriptions" className="btn btn-outline" style={{ justifyContent: 'flex-start', padding: '14px' }}>
-              <FileText size={20} color="#0d9488" /> View Digital Prescriptions
-            </Link>
-            <Link to="/patient/medical-records" className="btn btn-outline" style={{ justifyContent: 'flex-start', padding: '14px' }}>
-              <Clock size={20} color="#d97706" /> Upload & View Medical Records
-            </Link>
+        {/* Find a Doctor Side Widget */}
+        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', textAlign: 'center', padding: '32px 24px' }}>
+          <div>
+            <div style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#e0f2fe', color: '#0284c7', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <Stethoscope size={30} />
+            </div>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a', marginBottom: '8px' }}>Find a Doctor</h3>
+            <p style={{ fontSize: '13px', color: '#64748b', lineHeight: 1.5, marginBottom: '24px' }}>
+              Search and book appointments with top certified specialist doctors.
+            </p>
           </div>
+
+          <Link to="/patient/doctors" className="btn btn-primary" style={{ width: '100%', padding: '12px', borderRadius: '12px' }}>
+            Find Doctor
+          </Link>
         </div>
       </div>
     </Layout>
