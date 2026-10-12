@@ -36,6 +36,11 @@ public class Doctor {
     @Column(nullable = false)
     private DoctorStatus status = DoctorStatus.PENDING;
 
+    @Column(length = 1000)
+    private String rejectionReason;
+
+    private LocalDateTime approvedAt;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -76,6 +81,12 @@ public class Doctor {
 
     public DoctorStatus getStatus() { return status; }
     public void setStatus(DoctorStatus status) { this.status = status; }
+
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+    public LocalDateTime getApprovedAt() { return approvedAt; }
+    public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

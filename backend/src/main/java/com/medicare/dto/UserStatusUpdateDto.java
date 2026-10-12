@@ -1,6 +1,5 @@
 package com.medicare.dto;
 
-import com.medicare.entity.DoctorStatus;
 import jakarta.validation.constraints.NotNull;
 
 public class UserStatusUpdateDto {

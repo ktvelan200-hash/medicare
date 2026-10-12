@@ -1,7 +1,6 @@
 package com.medicare.exception;
 
 import com.medicare.dto.ApiResponse;
-import com.medicare.dto.ErrorDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -19,14 +18,13 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiResponse<ErrorDetails>> handleResourceNotFoundException(
+    public ResponseEntity<ApiResponse<String>> handleResourceNotFoundException(
             ResourceNotFoundException ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(ApiResponse.error(ex.getMessage()), HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponse<String>> handleBadRequestException(BadRequestException ex) {
+    @ExceptionHandler({BadRequestException.class, IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ApiResponse<String>> handleBadRequestException(Exception ex) {
         return new ResponseEntity<>(ApiResponse.error(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 

@@ -13,6 +13,10 @@ public class DoctorDto {
     private Double consultationFee;
     private String bio;
     private DoctorStatus status;
+    private String rejectionReason;
+    private LocalDateTime approvedAt;
+    private Double averageRating;
+    private Long totalReviews;
     private LocalDateTime createdAt;
 
     public DoctorDto() {}
@@ -40,6 +44,18 @@ public class DoctorDto {
 
     public DoctorStatus getStatus() { return status; }
     public void setStatus(DoctorStatus status) { this.status = status; }
+
+    public String getRejectionReason() { return rejectionReason; }
+    public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+
+    public LocalDateTime getApprovedAt() { return approvedAt; }
+    public void setApprovedAt(LocalDateTime approvedAt) { this.approvedAt = approvedAt; }
+
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
+
+    public Long getTotalReviews() { return totalReviews; }
+    public void setTotalReviews(Long totalReviews) { this.totalReviews = totalReviews; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

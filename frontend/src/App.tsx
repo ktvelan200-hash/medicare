@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 // Public Pages
@@ -29,12 +30,14 @@ import { AdminDoctors } from './pages/admin/AdminDoctors';
 import { AdminPatients } from './pages/admin/AdminPatients';
 import { AdminAppointments } from './pages/admin/AdminAppointments';
 import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminDoctorApprovals } from './pages/admin/AdminDoctorApprovals';
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <Routes>
           {/* Public Authentication Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -63,6 +66,7 @@ export const App: React.FC = () => {
           <Route element={<ProtectedRoute allowedRoles={['ROLE_ADMIN']} />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/doctors" element={<AdminDoctors />} />
+            <Route path="/admin/doctor-approvals" element={<AdminDoctorApprovals />} />
             <Route path="/admin/patients" element={<AdminPatients />} />
             <Route path="/admin/appointments" element={<AdminAppointments />} />
             <Route path="/admin/users" element={<AdminUsers />} />
@@ -72,8 +76,9 @@ export const App: React.FC = () => {
           <Route path="/" element={<Navigate to="/login" replace />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 

@@ -4,7 +4,6 @@ import com.medicare.dto.MedicalRecordDto;
 import com.medicare.entity.Doctor;
 import com.medicare.entity.MedicalRecord;
 import com.medicare.entity.Patient;
-import com.medicare.entity.User;
 import com.medicare.exception.ResourceNotFoundException;
 import com.medicare.mapper.ModelMapper;
 import com.medicare.repository.DoctorRepository;
@@ -42,7 +41,7 @@ public class MedicalRecordServiceImpl implements MedicalRecordService {
     @Override
     @Transactional
     public MedicalRecordDto addMedicalRecord(String userEmail, MedicalRecordDto recordDto) {
-        User user = userRepository.findByEmail(userEmail)
+        userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "email", userEmail));
 
         Patient patient;

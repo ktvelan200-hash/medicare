@@ -10,6 +10,7 @@ import com.medicare.repository.AppointmentRepository;
 import com.medicare.repository.DoctorRepository;
 import com.medicare.repository.PatientRepository;
 import com.medicare.repository.PrescriptionRepository;
+import com.medicare.service.EmailService;
 import com.medicare.service.NotificationService;
 import com.medicare.service.PrescriptionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,9 @@ public class PrescriptionServiceImpl implements PrescriptionService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -67,12 +71,23 @@ public class PrescriptionServiceImpl implements PrescriptionService {
         appointment.setStatus(AppointmentStatus.COMPLETED);
         appointmentRepository.save(appointment);
 
-        // Send notification to Patient
+        // Send notification to Patient (in-app + email)
         notificationService.createNotification(
                 appointment.getPatient().getUser(),
                 "New Prescription Issued",
                 "Dr. " + doctor.getUser().getFullName() + " has issued a new prescription for your appointment."
         );
+        if (emailService != null) {
+            try {
+                emailService.sendPrescriptionIssuedNotification(
+                        appointment.getPatient().getUser().getEmail(),
+                        appointment.getPatient().getUser().getFullName(),
+                        doctor.getUser().getFullName(),
+                        request.getDiagnosis()
+                );
+            } catch (Exception ignored) {
+            }
+        }
 
         return modelMapper.mapToPrescriptionDto(saved);
     }

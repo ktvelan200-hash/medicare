@@ -43,6 +43,9 @@ public class DataInitializer implements CommandLineRunner {
     private NotificationRepository notificationRepository;
 
     @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -77,7 +80,7 @@ public class DataInitializer implements CommandLineRunner {
                 "Dermatology", "MD, DNB - Stanford University", 8, 600.0,
                 "Specialist Dermatologist offering comprehensive clinical dermatology and laser treatments.", DoctorStatus.APPROVED);
 
-        Doctor doc4 = createDoctor("dr.michael@medicare.com", "Dr. Michael Chen", "doctor123", "+1-555-0104",
+        createDoctor("dr.michael@medicare.com", "Dr. Michael Chen", "doctor123", "+1-555-0104",
                 "Pediatrics", "MD, FAAP - Columbia University", 12, 550.0,
                 "Dedicated Pediatrician passionate about child growth monitoring and adolescent medicine.", DoctorStatus.PENDING);
 
@@ -113,7 +116,12 @@ public class DataInitializer implements CommandLineRunner {
                 "Keep area dry and avoid perfumed soaps. Follow up if rash persists after 1 week.");
         prescriptionRepository.save(pres);
 
-        // 7. Create Sample Medical Records
+        // 7. Create Sample Review for Completed Consultation
+        Review review1 = new Review(app3, doc3, pat1, 5,
+                "Dr. Emily Davis was extremely thorough and helpful! The prescribed hydrocortisone cream cleared up my contact dermatitis within 3 days. Highly recommend!");
+        reviewRepository.save(review1);
+
+        // 8. Create Sample Medical Records
         MedicalRecord rec1 = new MedicalRecord(pat1, doc1, "Lipid Profile & ECG Report", "Lab Report", "https://example.com/reports/ecg_john_doe.pdf", "Normal sinus rhythm, Cholesterol 195 mg/dL", LocalDate.now().minusDays(10));
         medicalRecordRepository.save(rec1);
 

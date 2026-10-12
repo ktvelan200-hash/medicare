@@ -27,4 +27,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     long countDistinctPatientsByDoctorId(@Param("doctorId") Long doctorId);
 
     List<Appointment> findAllByOrderByCreatedAtDesc();
+
+    // Used by the appointment reminder scheduler
+    List<Appointment> findByAppointmentDateAndStatusIn(LocalDate date, List<AppointmentStatus> statuses);
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,12 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired(required = false)
+    private com.medicare.service.NotificationService notificationService;
+
+    @Autowired(required = false)
+    private com.medicare.service.EmailService emailService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -91,7 +98,72 @@ public class DoctorServiceImpl implements DoctorService {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", doctorId));
         doctor.setStatus(status);
+        if (status == DoctorStatus.APPROVED) {
+            doctor.setApprovedAt(LocalDateTime.now());
+            doctor.setRejectionReason(null);
+        }
         Doctor updated = doctorRepository.save(doctor);
+        return modelMapper.mapToDoctorDto(updated);
+    }
+
+    @Override
+    @Transactional
+    public DoctorDto approveDoctor(Long doctorId) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", doctorId));
+        doctor.setStatus(DoctorStatus.APPROVED);
+        doctor.setApprovedAt(LocalDateTime.now());
+        doctor.setRejectionReason(null);
+        Doctor updated = doctorRepository.save(doctor);
+
+        if (notificationService != null && doctor.getUser() != null) {
+            notificationService.createNotification(
+                    doctor.getUser(),
+                    "🎉 Doctor Profile Approved",
+                    "Congratulations! Your profile has been verified and approved by the admin. You can now configure your schedule and accept patient bookings."
+            );
+        }
+        if (emailService != null && doctor.getUser() != null) {
+            try {
+                emailService.sendDoctorApprovalNotification(
+                        doctor.getUser().getEmail(),
+                        doctor.getUser().getFullName()
+                );
+            } catch (Exception ignored) {
+            }
+        }
+
+        return modelMapper.mapToDoctorDto(updated);
+    }
+
+    @Override
+    @Transactional
+    public DoctorDto rejectDoctor(Long doctorId, String rejectionReason) {
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", "id", doctorId));
+        doctor.setStatus(DoctorStatus.REJECTED);
+        doctor.setRejectionReason(rejectionReason);
+        doctor.setApprovedAt(null);
+        Doctor updated = doctorRepository.save(doctor);
+
+        if (notificationService != null && doctor.getUser() != null) {
+            notificationService.createNotification(
+                    doctor.getUser(),
+                    "⚠️ Application Status Update",
+                    "Your doctor verification was rejected. Reason: " + (rejectionReason != null ? rejectionReason : "Criteria not met")
+            );
+        }
+        if (emailService != null && doctor.getUser() != null) {
+            try {
+                emailService.sendDoctorRejectionNotification(
+                        doctor.getUser().getEmail(),
+                        doctor.getUser().getFullName(),
+                        rejectionReason
+                );
+            } catch (Exception ignored) {
+            }
+        }
+
         return modelMapper.mapToDoctorDto(updated);
     }
 
@@ -100,5 +172,10 @@ public class DoctorServiceImpl implements DoctorService {
         return doctorRepository.findByStatus(DoctorStatus.PENDING).stream()
                 .map(modelMapper::mapToDoctorDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public long getPendingDoctorsCount() {
+        return doctorRepository.countByStatus(DoctorStatus.PENDING);
     }
 }

@@ -12,5 +12,8 @@ public interface DoctorService {
     DoctorDto getDoctorByEmail(String email);
     DoctorDto updateDoctorProfile(String email, DoctorDto dto);
     DoctorDto updateDoctorStatus(Long doctorId, DoctorStatus status);
+    DoctorDto approveDoctor(Long doctorId);
+    DoctorDto rejectDoctor(Long doctorId, String rejectionReason);
     List<DoctorDto> getPendingDoctors();
+    long getPendingDoctorsCount();
 }

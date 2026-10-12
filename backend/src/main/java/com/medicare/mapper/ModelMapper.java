@@ -2,13 +2,15 @@ package com.medicare.mapper;
 
 import com.medicare.dto.*;
 import com.medicare.entity.*;
+import com.medicare.repository.ReviewRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 public class ModelMapper {
+
+    @Autowired(required = false)
+    private ReviewRepository reviewRepository;
 
     public UserDto mapToUserDto(User user) {
         if (user == null) return null;
@@ -48,7 +50,19 @@ public class ModelMapper {
         dto.setConsultationFee(doctor.getConsultationFee());
         dto.setBio(doctor.getBio());
         dto.setStatus(doctor.getStatus());
+        dto.setRejectionReason(doctor.getRejectionReason());
+        dto.setApprovedAt(doctor.getApprovedAt());
         dto.setCreatedAt(doctor.getCreatedAt());
+
+        if (reviewRepository != null && doctor.getId() != null) {
+            Double avg = reviewRepository.getAverageRatingByDoctorId(doctor.getId());
+            dto.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : 0.0);
+            dto.setTotalReviews(reviewRepository.countByDoctorId(doctor.getId()));
+        } else {
+            dto.setAverageRating(0.0);
+            dto.setTotalReviews(0L);
+        }
+
         return dto;
     }
 
@@ -78,6 +92,23 @@ public class ModelMapper {
         dto.setConsultationNotes(appointment.getConsultationNotes());
         dto.setCreatedAt(appointment.getCreatedAt());
         dto.setUpdatedAt(appointment.getUpdatedAt());
+
+        if (reviewRepository != null && appointment.getId() != null) {
+            reviewRepository.findByAppointmentId(appointment.getId()).ifPresentOrElse(
+                    r -> {
+                        dto.setHasReview(true);
+                        dto.setReviewRating(r.getRating());
+                    },
+                    () -> {
+                        dto.setHasReview(false);
+                        dto.setReviewRating(null);
+                    }
+            );
+        } else {
+            dto.setHasReview(false);
+            dto.setReviewRating(null);
+        }
+
         return dto;
     }
 

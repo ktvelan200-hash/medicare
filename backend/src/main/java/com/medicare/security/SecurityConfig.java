@@ -62,7 +62,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/doctors", "/api/doctors/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/doctors/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/doctor/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 );

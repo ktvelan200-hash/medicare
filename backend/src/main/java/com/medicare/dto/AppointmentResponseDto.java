@@ -16,6 +16,8 @@ public class AppointmentResponseDto {
     private String consultationNotes;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private Boolean hasReview;
+    private Integer reviewRating;
 
     public AppointmentResponseDto() {}
 
@@ -48,4 +50,10 @@ public class AppointmentResponseDto {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public Boolean getHasReview() { return hasReview; }
+    public void setHasReview(Boolean hasReview) { this.hasReview = hasReview; }
+
+    public Integer getReviewRating() { return reviewRating; }
+    public void setReviewRating(Integer reviewRating) { this.reviewRating = reviewRating; }
 }

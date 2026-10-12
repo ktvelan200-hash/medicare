@@ -71,8 +71,23 @@ export const DoctorProfilePage: React.FC = () => {
 
       <div style={{ maxWidth: '800px' }}>
         <form onSubmit={handleUpdate} className="card">
-          <div style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', marginBottom: '24px' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>Professional Doctor Info</h3>
+          <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>Professional Doctor Info</h3>
+            {doctor && (
+              <span style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '13px',
+                fontWeight: 700,
+                backgroundColor: '#fef3c7',
+                color: '#d97706',
+                padding: '4px 12px',
+                borderRadius: '16px',
+              }}>
+                ⭐ Patient Rating: {doctor.averageRating && doctor.averageRating > 0 ? doctor.averageRating.toFixed(1) : '5.0'} ({doctor.totalReviews || 0} reviews)
+              </span>
+            )}
           </div>
 
           <div className="form-grid">

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -13,11 +13,32 @@ import {
   Stethoscope,
   Activity,
   LogOut,
-  Building2
+  Building2,
+  ShieldCheck
 } from 'lucide-react';
+import api from '../services/api';
 
 export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
+  const [pendingCount, setPendingCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (user?.role === 'ROLE_ADMIN') {
+      fetchPendingCount();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchPendingCount, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  const fetchPendingCount = async () => {
+    try {
+      const res = await api.get('/admin/doctors/pending/count');
+      setPendingCount(res.data.data?.count ?? 0);
+    } catch (err) {
+      // silently fail - badge just won't show
+    }
+  };
 
   if (!user) return null;
 
@@ -85,11 +106,31 @@ export const Sidebar: React.FC = () => {
             <NavLink to="/admin/dashboard" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
               <LayoutDashboard size={18} /> Dashboard Overview
             </NavLink>
-            <NavLink to="/admin/doctors" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
-              <Stethoscope size={18} /> Doctor Verification
-            </NavLink>
             <NavLink to="/admin/patients" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
               <Users size={18} /> Manage Patients
+            </NavLink>
+            <NavLink to="/admin/doctors" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
+              <Stethoscope size={18} /> Doctor Directory
+            </NavLink>
+            <NavLink to="/admin/doctor-approvals" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} style={{ position: 'relative' }}>
+              <ShieldCheck size={18} />
+              <span style={{ flex: 1 }}>Doctor Approvals</span>
+              {pendingCount > 0 && (
+                <span style={{
+                  backgroundColor: '#ef4444',
+                  color: 'white',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  borderRadius: '9999px',
+                  padding: '2px 7px',
+                  minWidth: '20px',
+                  textAlign: 'center',
+                  lineHeight: '1.4',
+                  animation: 'badge-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                }}>
+                  {pendingCount}
+                </span>
+              )}
             </NavLink>
             <NavLink to="/admin/appointments" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}>
               <Calendar size={18} /> All Appointments

@@ -112,7 +112,7 @@ public class AuthServiceImpl implements AuthService {
             patient.setEmergencyContact(registerRequest.getEmergencyContact());
             patient.setMedicalHistory(registerRequest.getMedicalHistory());
             Patient savedPatient = patientRepository.save(patient);
-            roleSpecificId = savedPatient.getId();
+            roleSpecificId = (savedPatient != null) ? savedPatient.getId() : null;
         } else if (role == Role.ROLE_DOCTOR) {
             Doctor doctor = new Doctor();
             doctor.setUser(savedUser);
@@ -121,9 +121,9 @@ public class AuthServiceImpl implements AuthService {
             doctor.setExperienceYears(registerRequest.getExperienceYears() != null ? registerRequest.getExperienceYears() : 1);
             doctor.setConsultationFee(registerRequest.getConsultationFee() != null ? registerRequest.getConsultationFee() : 500.0);
             doctor.setBio(registerRequest.getBio());
-            doctor.setStatus(DoctorStatus.APPROVED); // Default to approved for seamless demo / testing
+            doctor.setStatus(DoctorStatus.PENDING); // Requires admin approval before becoming active
             Doctor savedDoctor = doctorRepository.save(doctor);
-            roleSpecificId = savedDoctor.getId();
+            roleSpecificId = (savedDoctor != null) ? savedDoctor.getId() : null;
         }
 
         // Auto authenticate after registration

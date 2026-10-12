@@ -11,6 +11,7 @@ import com.medicare.repository.AppointmentRepository;
 import com.medicare.repository.DoctorRepository;
 import com.medicare.repository.PatientRepository;
 import com.medicare.service.AppointmentService;
+import com.medicare.service.EmailService;
 import com.medicare.service.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class AppointmentServiceImpl implements AppointmentService {
 
     @Autowired
     private NotificationService notificationService;
+
+    @Autowired
+    private EmailService emailService;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -71,7 +75,7 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment saved = appointmentRepository.save(appointment);
 
-        // Notify Doctor & Patient
+        // Notify Doctor & Patient (in-app + email)
         notificationService.createNotification(
                 doctor.getUser(),
                 "New Appointment Request",
@@ -82,6 +86,27 @@ public class AppointmentServiceImpl implements AppointmentService {
                 "Appointment Submitted",
                 "Your appointment request with Dr. " + doctor.getUser().getFullName() + " is pending approval."
         );
+
+        // Email notifications
+        if (emailService != null) {
+            try {
+                emailService.sendAppointmentConfirmation(
+                        patient.getUser().getEmail(),
+                        patient.getUser().getFullName(),
+                        doctor.getUser().getFullName(),
+                        saved.getAppointmentDate().toString(),
+                        saved.getTimeSlot()
+                );
+                emailService.sendNewAppointmentAlertToDoctor(
+                        doctor.getUser().getEmail(),
+                        doctor.getUser().getFullName(),
+                        patient.getUser().getFullName(),
+                        saved.getAppointmentDate().toString(),
+                        saved.getTimeSlot()
+                );
+            } catch (Exception ignored) {
+            }
+        }
 
         return modelMapper.mapToAppointmentResponseDto(saved);
     }
@@ -124,12 +149,24 @@ public class AppointmentServiceImpl implements AppointmentService {
 
         Appointment updated = appointmentRepository.save(appointment);
 
-        // Notify Patient
+        // Notify Patient (in-app + email)
         notificationService.createNotification(
                 appointment.getPatient().getUser(),
                 "Appointment Update",
                 "Your appointment with Dr. " + appointment.getDoctor().getUser().getFullName() + " has been updated to: " + updateDto.getStatus()
         );
+        if (emailService != null) {
+            try {
+                emailService.sendAppointmentStatusUpdate(
+                        appointment.getPatient().getUser().getEmail(),
+                        appointment.getPatient().getUser().getFullName(),
+                        appointment.getDoctor().getUser().getFullName(),
+                        appointment.getAppointmentDate().toString(),
+                        updateDto.getStatus().name()
+                );
+            } catch (Exception ignored) {
+            }
+        }
 
         return modelMapper.mapToAppointmentResponseDto(updated);
     }
@@ -156,6 +193,18 @@ public class AppointmentServiceImpl implements AppointmentService {
                 "Appointment Cancelled",
                 "Patient " + appointment.getPatient().getUser().getFullName() + " cancelled the appointment on " + appointment.getAppointmentDate()
         );
+        if (emailService != null) {
+            try {
+                emailService.sendAppointmentStatusUpdate(
+                        appointment.getPatient().getUser().getEmail(),
+                        appointment.getPatient().getUser().getFullName(),
+                        appointment.getDoctor().getUser().getFullName(),
+                        appointment.getAppointmentDate().toString(),
+                        "CANCELLED"
+                );
+            } catch (Exception ignored) {
+            }
+        }
 
         return modelMapper.mapToAppointmentResponseDto(cancelled);
     }

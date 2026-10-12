@@ -3,6 +3,7 @@ package com.medicare;
 import com.medicare.dto.JwtAuthResponse;
 import com.medicare.dto.LoginRequest;
 import com.medicare.dto.RegisterRequest;
+import com.medicare.entity.Patient;
 import com.medicare.entity.Role;
 import com.medicare.entity.User;
 import com.medicare.exception.BadRequestException;
@@ -86,7 +87,9 @@ public class AuthServiceTest {
         when(userRepository.existsByEmail("newpatient@medicare.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(sampleUser);
-        when(patientRepository.save(any())).thenReturn(null);
+        Patient mockPatient = new Patient();
+        mockPatient.setId(10L);
+        when(patientRepository.save(any(Patient.class))).thenReturn(mockPatient);
 
         Authentication auth = mock(Authentication.class);
         when(authenticationManager.authenticate(any())).thenReturn(auth);

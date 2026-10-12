@@ -32,6 +32,10 @@ export interface Doctor {
   consultationFee?: number;
   bio?: string;
   status: DoctorStatus;
+  rejectionReason?: string;
+  approvedAt?: string;
+  averageRating?: number;
+  totalReviews?: number;
   createdAt: string;
 }
 
@@ -54,8 +58,30 @@ export interface Appointment {
   status: AppointmentStatus;
   reason?: string;
   consultationNotes?: string;
+  hasReview?: boolean;
+  reviewRating?: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Review {
+  id: number;
+  appointmentId: number;
+  doctorId: number;
+  doctorName: string;
+  patientId: number;
+  patientName: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+}
+
+export interface DoctorRatingSummary {
+  doctorId: number;
+  doctorName: string;
+  averageRating: number;
+  totalReviews: number;
+  starCounts: Record<number, number>;
 }
 
 export interface Prescription {

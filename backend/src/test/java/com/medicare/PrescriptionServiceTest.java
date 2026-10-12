@@ -39,6 +39,9 @@ public class PrescriptionServiceTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private com.medicare.service.EmailService emailService;
+
     @Spy
     private ModelMapper modelMapper;
 
